@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Статус</title>
+</head>
+<body>
+<p th:text="${status}" th:style="'color:' + ${statusColor}"></p>
+<p th:text="'Release: ' + ${release}"></p>
+</body>
+</html>
