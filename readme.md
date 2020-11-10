@@ -14,6 +14,6 @@
 > postgres://username:password@address  
 
 звтем:
-> heroku config:set JDBC_DATABASE_URL=jdbc:postgresql://<address>  
-> heroku config:set JDBC_DATABASE_USERNAME=<username>  
-> heroku config:set JDBC_DATABASE_PASSWORD=<password>  
+> heroku config:set JDBC_DATABASE_URL=jdbc:postgresql://address  
+> heroku config:set JDBC_DATABASE_USERNAME=username  
+> heroku config:set JDBC_DATABASE_PASSWORD=password  
