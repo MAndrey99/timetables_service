@@ -30,7 +30,7 @@ public class Deadline {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @ToString.Exclude
-    @Getter private long id;
+    @Getter protected long id;
     @Getter protected final long creatorId;
     @Getter protected final long groupId;
     @Getter @Setter protected LocalDateTime creationDateTime;
