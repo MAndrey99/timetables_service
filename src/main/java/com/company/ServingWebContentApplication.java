@@ -1,5 +1,7 @@
 package com.company;
 
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -34,6 +36,7 @@ public class ServingWebContentApplication {
         return Jackson2ObjectMapperBuilder.json()
                 .modules(module)
                 .featuresToDisable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+                .featuresToEnable(JsonParser.Feature.ALLOW_SINGLE_QUOTES)
                 .build();
     }
 }
