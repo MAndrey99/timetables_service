@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -31,27 +32,30 @@ public class DeadlineController {
 
     @GetMapping
     String getDeadline(@RequestParam(value = "groupId", required = false) Long groupId,
-                       @RequestParam(value = "creatorId", required = false) Long creatorId) throws JsonProcessingException {
+                       @RequestParam(value = "creatorId", required = false) Long creatorId,
+                       @RequestParam(defaultValue = "true") boolean relevant) throws JsonProcessingException {
+        Deadline.DeadlinesBucket result;
+
         if (groupId == null) {
             if (creatorId == null)
-                return objectMapper.writeValueAsString(new Deadline.DeadlinesBucket(
-                        StreamSupport.stream(deadlineRepository.findAll().spliterator(), false)
-                                .collect(Collectors.toList())
-                ));
+                result = new Deadline.DeadlinesBucket(
+                        StreamSupport.stream(
+                                (relevant ? deadlineRepository.findAllByDateTimeAfter(LocalDateTime.now())
+                                : deadlineRepository.findAll()).spliterator(),
+                                false).collect(Collectors.toList())
+                );
             else
-                return objectMapper.writeValueAsString(new Deadline.DeadlinesBucket(
-                        deadlineRepository.findByCreatorId(creatorId)
-                ));
+                result = new Deadline.DeadlinesBucket(deadlineRepository.findByCreatorId(creatorId, relevant));
         } else {
             if (creatorId == null)
-                return objectMapper.writeValueAsString(new Deadline.DeadlinesBucket(
-                        deadlineRepository.findByGroupId(groupId)
-                ));
+                result = new Deadline.DeadlinesBucket(deadlineRepository.findByGroupId(groupId, relevant));
             else
-                return objectMapper.writeValueAsString(new Deadline.DeadlinesBucket(
-                        deadlineRepository.findByGroupIdAndCreatorId(groupId, creatorId)
-                ));
+                result = new Deadline.DeadlinesBucket(
+                        deadlineRepository.findByGroupIdAndCreatorId(groupId, creatorId, relevant)
+                );
         }
+
+        return objectMapper.writeValueAsString(result);
     }
 
     @DeleteMapping
