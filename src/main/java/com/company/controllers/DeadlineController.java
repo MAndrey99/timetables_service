@@ -53,4 +53,9 @@ public class DeadlineController {
                 ));
         }
     }
+
+    @DeleteMapping
+    void deleteDeadline(@RequestParam(value = "id") long id) {
+        deadlineRepository.deleteById(id);
+    }
 }
