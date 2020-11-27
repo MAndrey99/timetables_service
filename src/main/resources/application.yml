@@ -10,4 +10,6 @@ spring:
     username: ${JDBC_DATABASE_USERNAME}
     password: ${JDBC_DATABASE_PASSWORD}
 application:
-  datetime-format: "dd-MM-yyyy HH:mm:ss"
+  datetime:
+    format: "dd-MM-yyyy HH:mm:ss"
+    zone: "Europe/Moscow"

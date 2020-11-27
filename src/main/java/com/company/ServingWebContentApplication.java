@@ -1,7 +1,6 @@
 package com.company;
 
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -14,18 +13,28 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 
+import javax.annotation.PostConstruct;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.TimeZone;
 
 @SpringBootApplication
 @EnableJpaRepositories("com.company.repositories")
 public class ServingWebContentApplication {
+    @Value("${application.datetime.zone}")
+    String timezone;
+
     public static void main(String[] args) {
         SpringApplication.run(ServingWebContentApplication.class, args);
     }
 
+    @PostConstruct
+    public void init() {
+        TimeZone.setDefault(TimeZone.getTimeZone(timezone));
+    }
+
     @Bean
-    ObjectMapper jsonMapper(@Value("${application.datetime-format}") String datetimeFormat) {
+    ObjectMapper jsonMapper(@Value("${application.datetime.format}") String datetimeFormat) {
         JavaTimeModule module = new JavaTimeModule();
         module.addSerializer(LocalDateTime.class, new LocalDateTimeSerializer(
                 DateTimeFormatter.ofPattern(datetimeFormat)
