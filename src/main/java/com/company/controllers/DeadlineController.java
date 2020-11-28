@@ -11,8 +11,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 @RestController()
 @RequestMapping("deadlines")
@@ -34,28 +32,22 @@ public class DeadlineController {
     String getDeadline(@RequestParam(value = "groupId", required = false) Long groupId,
                        @RequestParam(value = "creatorId", required = false) Long creatorId,
                        @RequestParam(defaultValue = "true") boolean relevant) throws JsonProcessingException {
-        Deadline.DeadlinesBucket result;
-
-        if (groupId == null) {
-            if (creatorId == null)
-                result = new Deadline.DeadlinesBucket(
-                        StreamSupport.stream(
-                                (relevant ? deadlineRepository.findAllByDateTimeAfter(LocalDateTime.now())
-                                : deadlineRepository.findAll()).spliterator(),
-                                false).collect(Collectors.toList())
-                );
-            else
-                result = new Deadline.DeadlinesBucket(deadlineRepository.findByCreatorId(creatorId, relevant));
-        } else {
-            if (creatorId == null)
-                result = new Deadline.DeadlinesBucket(deadlineRepository.findByGroupId(groupId, relevant));
-            else
-                result = new Deadline.DeadlinesBucket(
-                        deadlineRepository.findByGroupIdAndCreatorId(groupId, creatorId, relevant)
-                );
-        }
-
-        return objectMapper.writeValueAsString(result);
+        return objectMapper.writeValueAsString(
+                new Deadline.DeadlinesBucket(
+                        deadlineRepository.findAll((r, cq, cb) -> {
+                            var res = cb.conjunction();
+                            if (groupId != null) {
+                                res = cb.and(res, cb.equal(r.get("groupId"), groupId));
+                            }
+                            if (creatorId != null) {
+                                res = cb.and(res, cb.equal(r.get("creatorId"), creatorId));
+                            }
+                            if (relevant)
+                                res = cb.and(res, cb.greaterThan(r.get("dateTime"), LocalDateTime.now()));
+                            return res;
+                        })
+                )
+        );
     }
 
     @DeleteMapping
