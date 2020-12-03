@@ -2,6 +2,7 @@ package com.company.controllers;
 
 import com.company.models.Deadline;
 import com.company.repositories.DeadlineRepository;
+import com.company.subscription.Notifier;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,12 +18,14 @@ import java.time.LocalDateTime;
 public class DeadlineController {
     @Autowired private ObjectMapper objectMapper;
     @Autowired private DeadlineRepository deadlineRepository;
+    @Autowired private Notifier notifier;
 
     @PostMapping
     void postDeadline(@RequestBody String deadline) {
         try {
             Deadline dl = objectMapper.createParser(deadline).readValueAs(Deadline.class);
             deadlineRepository.save(dl);
+            notifier.updateNextNotificationTime();
         } catch (IOException e) {
             throw new ResponseStatusException(HttpStatus.EXPECTATION_FAILED);
         }

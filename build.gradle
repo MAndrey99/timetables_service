@@ -14,12 +14,16 @@ repositories {
 
 dependencies {
     def springVersion = '2.4.0'
+    def lombokVersion = '1.18.16'
     compile group: 'org.springframework.boot', name: 'spring-boot-starter-data-jpa', version: springVersion
     compile group: 'org.springframework.boot', name: 'spring-boot-starter-thymeleaf', version: springVersion
-    compile group: 'org.projectlombok', name: 'lombok', version: '1.18.16'
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.11.3'
     compile group: 'org.postgresql', name: 'postgresql', version: '42.2.18'
     implementation 'org.springframework.boot:spring-boot-starter-web'
+
+    compileOnly group: 'org.projectlombok', name: 'lombok', version: lombokVersion
+    annotationProcessor group: 'org.projectlombok', name: 'lombok', version: lombokVersion
+
     testImplementation('org.springframework.boot:spring-boot-starter-test') {
         exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
     }

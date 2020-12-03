@@ -13,3 +13,5 @@ application:
   datetime:
     format: "dd-MM-yyyy HH:mm:ss"
     zone: "Europe/Moscow"
+  subscribers:
+    maxAdvanceNoticeSeconds: 20
