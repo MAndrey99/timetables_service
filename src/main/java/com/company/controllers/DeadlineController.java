@@ -2,6 +2,7 @@ package com.company.controllers;
 
 import com.company.models.Deadline;
 import com.company.repositories.DeadlineRepository;
+import com.company.subscription.Notifier;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,20 +11,21 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
+import java.time.LocalDateTime;
 
 @RestController()
 @RequestMapping("deadlines")
 public class DeadlineController {
     @Autowired private ObjectMapper objectMapper;
     @Autowired private DeadlineRepository deadlineRepository;
+    @Autowired private Notifier notifier;
 
     @PostMapping
     void postDeadline(@RequestBody String deadline) {
         try {
             Deadline dl = objectMapper.createParser(deadline).readValueAs(Deadline.class);
             deadlineRepository.save(dl);
+            notifier.updateNextNotificationTime();
         } catch (IOException e) {
             throw new ResponseStatusException(HttpStatus.EXPECTATION_FAILED);
         }
@@ -31,27 +33,25 @@ public class DeadlineController {
 
     @GetMapping
     String getDeadline(@RequestParam(value = "groupId", required = false) Long groupId,
-                       @RequestParam(value = "creatorId", required = false) Long creatorId) throws JsonProcessingException {
-        if (groupId == null) {
-            if (creatorId == null)
-                return objectMapper.writeValueAsString(new Deadline.DeadlinesBucket(
-                        StreamSupport.stream(deadlineRepository.findAll().spliterator(), false)
-                                .collect(Collectors.toList())
-                ));
-            else
-                return objectMapper.writeValueAsString(new Deadline.DeadlinesBucket(
-                        deadlineRepository.findByCreatorId(creatorId)
-                ));
-        } else {
-            if (creatorId == null)
-                return objectMapper.writeValueAsString(new Deadline.DeadlinesBucket(
-                        deadlineRepository.findByGroupId(groupId)
-                ));
-            else
-                return objectMapper.writeValueAsString(new Deadline.DeadlinesBucket(
-                        deadlineRepository.findByGroupIdAndCreatorId(groupId, creatorId)
-                ));
-        }
+                       @RequestParam(value = "creatorId", required = false) Long creatorId,
+                       @RequestParam(defaultValue = "true") boolean relevant) throws JsonProcessingException {
+        return objectMapper.writeValueAsString(
+                new Deadline.DeadlinesBucket(
+                        deadlineRepository.findAll((r, cq, cb) -> {
+                            cq.orderBy(cb.asc(r.get("dateTime")));
+                            var res = cb.conjunction();
+                            if (groupId != null) {
+                                res = cb.and(res, cb.equal(r.get("groupId"), groupId));
+                            }
+                            if (creatorId != null) {
+                                res = cb.and(res, cb.equal(r.get("creatorId"), creatorId));
+                            }
+                            if (relevant)
+                                res = cb.and(res, cb.greaterThan(r.get("dateTime"), LocalDateTime.now()));
+                            return res;
+                        })
+                )
+        );
     }
 
     @DeleteMapping

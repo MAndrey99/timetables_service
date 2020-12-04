@@ -18,9 +18,10 @@ import java.util.List;
 @JsonAutoDetect(creatorVisibility = JsonAutoDetect.Visibility.PROTECTED_AND_PUBLIC,
         fieldVisibility = JsonAutoDetect.Visibility.PROTECTED_AND_PUBLIC)
 public class Deadline {
+    @ToString
     @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.PROTECTED_AND_PUBLIC)
     public static class DeadlinesBucket {
-        protected List<Deadline> deadlines;
+        @Getter protected List<Deadline> deadlines;
 
         public DeadlinesBucket(List<Deadline> data) {
             this.deadlines = data;
@@ -30,7 +31,7 @@ public class Deadline {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @ToString.Exclude
-    @Getter protected long id;
+    protected long id;
     @Getter protected final long creatorId;
     @Getter protected final long groupId;
     @Getter @Setter protected LocalDateTime creationDateTime;

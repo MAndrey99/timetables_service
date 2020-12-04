@@ -1,25 +1,29 @@
 plugins {
-    id 'org.springframework.boot' version '2.3.5.RELEASE'
+    id 'org.springframework.boot' version '2.4.0'
     id 'io.spring.dependency-management' version '1.0.10.RELEASE'
     id 'java'
 }
 
 group 'org.example'
-version '0.0'
-sourceCompatibility = '1.15'
+version '0.1'
+sourceCompatibility = '15'
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    def springVersion = '2.3.5.RELEASE'
+    def springVersion = '2.4.0'
+    def lombokVersion = '1.18.16'
     compile group: 'org.springframework.boot', name: 'spring-boot-starter-data-jpa', version: springVersion
     compile group: 'org.springframework.boot', name: 'spring-boot-starter-thymeleaf', version: springVersion
-    compile group: 'org.projectlombok', name: 'lombok', version: '1.18.16'
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.11.3'
     compile group: 'org.postgresql', name: 'postgresql', version: '42.2.18'
     implementation 'org.springframework.boot:spring-boot-starter-web'
+
+    compileOnly group: 'org.projectlombok', name: 'lombok', version: lombokVersion
+    annotationProcessor group: 'org.projectlombok', name: 'lombok', version: lombokVersion
+
     testImplementation('org.springframework.boot:spring-boot-starter-test') {
         exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
     }
