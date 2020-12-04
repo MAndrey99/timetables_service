@@ -38,6 +38,7 @@ public class DeadlineController {
         return objectMapper.writeValueAsString(
                 new Deadline.DeadlinesBucket(
                         deadlineRepository.findAll((r, cq, cb) -> {
+                            cq.orderBy(cb.asc(r.get("dateTime")));
                             var res = cb.conjunction();
                             if (groupId != null) {
                                 res = cb.and(res, cb.equal(r.get("groupId"), groupId));
