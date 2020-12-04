@@ -62,7 +62,7 @@ public class Notifier extends Thread {
 
         final boolean successful = response != null && response.statusCode() == 200;
         if (successful) {
-            sub.setLastSendDeadlineDatetime(bucket.getDeadlines().get(0).getDateTime());
+            sub.setLastSendDeadlineDatetime(bucket.getDeadlines().get(bucket.getDeadlines().size() - 1).getDateTime());
             subscriberRepository.save(sub);
         }
         return CompletableFuture.completedFuture(successful);
@@ -76,10 +76,10 @@ public class Notifier extends Thread {
 
         for (var subscriber : subscriberRepository.findAll()) {
             List<Deadline> toSending = new ArrayList<>(deadlineRepository.findAll((r, cq, cb) -> {
-                cq.orderBy(cb.desc(r.get("dateTime")));
+                cq.orderBy(cb.asc(r.get("dateTime")));
                 return cb.and(
                         cb.lessThan(r.get("dateTime"), now.plusSeconds(maxAdvanceNoticeSeconds / 2)),
-                        cb.greaterThanOrEqualTo(r.get("dateTime"), subscriber.getLastSendDeadlineDatetime())
+                        cb.greaterThan(r.get("dateTime"), subscriber.getLastSendDeadlineDatetime())
                 );
             }));
 
