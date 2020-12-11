@@ -8,10 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
@@ -66,6 +63,22 @@ public class SubscriberController {
             // подписчик не принял наш запрос или сделать запрос не удалось
             log.info("добавить подписчика " + subscriberUrl + " не удалось");
             throw new ResponseStatusException(HttpStatus.EXPECTATION_FAILED);
+        }
+    }
+
+    @DeleteMapping
+    void unsubscribe(@RequestParam String url) {
+        if (!url.startsWith("http"))
+            url = "https://" + url;
+
+        var sub = subscriberRepository.findFirstByWebhookURL(url);
+
+        if (sub.isPresent()) {
+            subscriberRepository.delete(sub.get());
+            log.info("удален подписчик " + url);
+        } else {
+            log.info("не удалось удалить подписчика(подписчик не найден) " + url);
+            throw new ResponseStatusException(HttpStatus.NO_CONTENT);
         }
     }
 }
