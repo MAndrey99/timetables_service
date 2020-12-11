@@ -14,7 +14,6 @@ import java.util.List;
 
 @Entity
 @Table(name = "deadline")
-@ToString
 @JsonAutoDetect(creatorVisibility = JsonAutoDetect.Visibility.PROTECTED_AND_PUBLIC,
         fieldVisibility = JsonAutoDetect.Visibility.PROTECTED_AND_PUBLIC)
 public class Deadline {
@@ -30,7 +29,6 @@ public class Deadline {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @ToString.Exclude
     protected long id;
     @Getter protected final long creatorId;
     @Getter protected final long groupId;

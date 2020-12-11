@@ -5,6 +5,7 @@ import com.company.models.Subscriber;
 import com.company.repositories.SubscriberRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,6 +22,7 @@ import java.net.http.HttpResponse;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 
+@Slf4j
 @RestController()
 @RequestMapping("subscribers")
 public class SubscriberController {
@@ -32,6 +34,12 @@ public class SubscriberController {
         if (!subscriberUrl.startsWith("http"))
             subscriberUrl = "https://" + subscriberUrl;
 
+        if (subscriberRepository.findFirstByWebhookURL(subscriberUrl).isPresent()) {
+            log.info("предотвращено повторное добавление подписчика");
+            throw new ResponseStatusException(HttpStatus.CONFLICT);
+        }
+
+        // пытаемся отправить новому подписчику пробный запрос
         final var client = HttpClient.newHttpClient();
         final var request = HttpRequest.newBuilder()
                 .uri(URI.create(subscriberUrl))
@@ -46,11 +54,18 @@ public class SubscriberController {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
         if (response != null && response.statusCode() == 200) {
+            // подписчик принял наш запрос
             var newSubscriber = new Subscriber();
             newSubscriber.setWebhookURL(subscriberUrl);
             newSubscriber.setLastSendDeadlineDatetime(LocalDateTime.now());
             subscriberRepository.save(newSubscriber);
-        } else throw new ResponseStatusException(HttpStatus.EXPECTATION_FAILED);
+            log.info("добавлен новый подписчик: " + subscriberUrl);
+        } else {
+            // подписчик не принял наш запрос или сделать запрос не удалось
+            log.info("добавить подписчика " + subscriberUrl + " не удалось");
+            throw new ResponseStatusException(HttpStatus.EXPECTATION_FAILED);
+        }
     }
 }
