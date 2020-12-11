@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.ToString;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -17,7 +16,6 @@ import java.util.List;
 @JsonAutoDetect(creatorVisibility = JsonAutoDetect.Visibility.PROTECTED_AND_PUBLIC,
         fieldVisibility = JsonAutoDetect.Visibility.PROTECTED_AND_PUBLIC)
 public class Deadline {
-    @ToString
     @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.PROTECTED_AND_PUBLIC)
     public static class DeadlinesBucket {
         @Getter protected List<Deadline> deadlines;
