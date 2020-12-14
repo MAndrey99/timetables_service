@@ -2,6 +2,7 @@ package com.company.models;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -9,6 +10,7 @@ import java.time.LocalDateTime;
 /**
  * Сервис, которому требуется присылать уведомления о таких событиях как наступление дедлайна.
  */
+@ToString
 @Entity
 @Table(name = "subscriber")
 public class Subscriber {
