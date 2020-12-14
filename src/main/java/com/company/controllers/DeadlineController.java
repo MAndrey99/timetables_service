@@ -58,17 +58,13 @@ public class DeadlineController {
     @DeleteMapping
     void deleteDeadline(@RequestParam(value = "groupId", required = false) Long groupId,
                         @RequestParam(value = "id") long id) {
-        Optional<Deadline> deadline;
+        var deadline = deadlineRepository.findById(id);
+        if (deadline.isEmpty())
+            throw new ResponseStatusException(HttpStatus.NO_CONTENT);
+
         if (groupId != null) {
-            deadline = deadlineRepository.findById(id);
-            if (deadline.isEmpty())
-                throw new ResponseStatusException(HttpStatus.NO_CONTENT);
             if (deadline.get().getGroupId() != groupId)
                 throw new ResponseStatusException(HttpStatus.EXPECTATION_FAILED);
-        } else {
-            deadline = deadlineRepository.findById(id);
-            if (deadline.isEmpty())
-                throw new ResponseStatusException(HttpStatus.NO_CONTENT);
         }
 
         deadlineRepository.delete(deadline.get());
