@@ -12,6 +12,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @RestController()
 @RequestMapping("deadlines")
@@ -55,7 +56,21 @@ public class DeadlineController {
     }
 
     @DeleteMapping
-    void deleteDeadline(@RequestParam(value = "id") long id) {
-        deadlineRepository.deleteById(id);
+    void deleteDeadline(@RequestParam(value = "groupId", required = false) Long groupId,
+                        @RequestParam(value = "id") long id) {
+        Optional<Deadline> deadline;
+        if (groupId != null) {
+            deadline = deadlineRepository.findById(id);
+            if (deadline.isEmpty())
+                throw new ResponseStatusException(HttpStatus.NO_CONTENT);
+            if (deadline.get().getGroupId() != groupId)
+                throw new ResponseStatusException(HttpStatus.EXPECTATION_FAILED);
+        } else {
+            deadline = deadlineRepository.findById(id);
+            if (deadline.isEmpty())
+                throw new ResponseStatusException(HttpStatus.NO_CONTENT);
+        }
+
+        deadlineRepository.delete(deadline.get());
     }
 }
