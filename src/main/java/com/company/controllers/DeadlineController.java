@@ -12,7 +12,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.Optional;
 
 @RestController()
 @RequestMapping("deadlines")
@@ -30,6 +29,21 @@ public class DeadlineController {
         } catch (IOException e) {
             throw new ResponseStatusException(HttpStatus.EXPECTATION_FAILED);
         }
+    }
+
+    @PatchMapping(path = "/{id}")
+    void patchDeadline(@PathVariable long id, @RequestBody String reuqest) {
+        Deadline.DeadlinePatch patch;
+        try {
+            patch = objectMapper.createParser(reuqest).readValueAs(Deadline.DeadlinePatch.class);
+        } catch (IOException e) {
+            throw new ResponseStatusException(HttpStatus.EXPECTATION_FAILED);
+        }
+
+        var deadline = deadlineRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        deadline.applyPatch(patch);
+        deadlineRepository.save(deadline);
     }
 
     @GetMapping
@@ -55,9 +69,9 @@ public class DeadlineController {
         );
     }
 
-    @DeleteMapping
+    @DeleteMapping("/{id}")
     void deleteDeadline(@RequestParam(value = "groupId", required = false) Long groupId,
-                        @RequestParam(value = "id") long id) {
+                        @PathVariable(value = "id") long id) {
         var deadline = deadlineRepository.findById(id);
         if (deadline.isEmpty())
             throw new ResponseStatusException(HttpStatus.NO_CONTENT);

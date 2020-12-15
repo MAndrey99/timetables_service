@@ -25,6 +25,24 @@ public class Deadline {
         }
     }
 
+    @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.PROTECTED_AND_PUBLIC)
+    public static class DeadlinePatch {
+        @Getter protected String title;
+        @Getter protected String description;
+        @Getter protected LocalDateTime dateTime;
+        @Getter protected Long leadTime;
+
+        public DeadlinePatch(@JsonProperty(value = "dateTime") LocalDateTime dateTime,
+                     @JsonProperty(value = "leadTime") Long leadTime,
+                     @JsonProperty(value = "title") String title,
+                     @JsonProperty(value = "description") String description) {
+            this.title = title;
+            this.description = description;
+            this.dateTime = dateTime;
+            this.leadTime = leadTime;
+        }
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     protected long id;
@@ -58,5 +76,16 @@ public class Deadline {
         this.leadTime = leadTime;
         this.title = title;
         this.description = description;
+    }
+
+    public void applyPatch(DeadlinePatch patch) {
+        if (patch.title != null)
+            title = patch.title;
+        if (patch.dateTime != null)
+            dateTime = patch.dateTime;
+        if (patch.description != null)
+            description = patch.description;
+        if (patch.leadTime != null)
+            leadTime = patch.leadTime;
     }
 }
