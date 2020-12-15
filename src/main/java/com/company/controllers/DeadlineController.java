@@ -61,12 +61,8 @@ public class DeadlineController {
         var deadline = deadlineRepository.findById(id);
         if (deadline.isEmpty())
             throw new ResponseStatusException(HttpStatus.NO_CONTENT);
-
-        if (groupId != null) {
-            if (deadline.get().getGroupId() != groupId)
-                throw new ResponseStatusException(HttpStatus.EXPECTATION_FAILED);
-        }
-
+        if (groupId != null && deadline.get().getGroupId() != groupId)
+            throw new ResponseStatusException(HttpStatus.EXPECTATION_FAILED);
         deadlineRepository.delete(deadline.get());
     }
 }
