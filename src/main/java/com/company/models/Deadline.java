@@ -25,35 +25,77 @@ public class Deadline {
         }
     }
 
+    @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.PROTECTED_AND_PUBLIC)
+    public static class DeadlinePatch {
+        protected String title;
+        protected String description;
+        protected LocalDateTime dateTime;
+        protected Integer leadTime;
+        protected Short priority;
+
+        public DeadlinePatch(
+                @JsonProperty(value = "dateTime") LocalDateTime dateTime,
+                @JsonProperty(value = "leadTime") Integer leadTime,
+                @JsonProperty(value = "title") String title,
+                @JsonProperty(value = "description") String description,
+                @JsonProperty(value = "priority") Short priority
+        ) {
+            this.title = title;
+            this.description = description;
+            this.dateTime = dateTime;
+            this.leadTime = leadTime;
+            this.priority = priority;
+        }
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     protected long id;
     @Getter protected final long creatorId;
     @Getter protected final long groupId;
-    @Getter @Setter protected LocalDateTime creationDateTime;
-    @Getter @Setter protected LocalDateTime dateTime;
+    @Getter @Setter protected LocalDateTime creationDateTime;  // время появления задачи
+    @Getter @Setter protected LocalDateTime dateTime;  // время, к которому задача должна быть выполнена
+    @Getter @Setter protected int leadTime;  // предположительное время выполнения задачи в секундах
     @Getter @Setter protected String title;
     @Getter @Setter protected String description;
+    @Getter @Setter protected short priority;  // приоритет задачи. 0 - стандартный. Ниже значение - выше приоритет
 
-    public Deadline(@JsonProperty(value = "creatorId") long creatorId,
-                    @JsonProperty(value = "groupId") long groupId,
-                    @JsonProperty(value = "dateTime") LocalDateTime dateTime,
-                    @JsonProperty(value = "title") String title,
+    public Deadline(@JsonProperty(value = "creatorId", required = true) long creatorId,
+                    @JsonProperty(value = "groupId", required = true) long groupId,
+                    @JsonProperty(value = "dateTime", required = true) LocalDateTime dateTime,
+                    @JsonProperty(value = "leadTime") Integer leadTime,
+                    @JsonProperty(value = "priority") short priority,
+                    @JsonProperty(value = "title", required = true) String title,
                     @JsonProperty(value = "description") String description) {
-        this(creatorId, groupId, LocalDateTime.now(), dateTime, title, description);
+        this(creatorId, groupId, LocalDateTime.now(), dateTime, leadTime, priority, title, description);
     }
 
     protected Deadline() {
-        creatorId = groupId = -1;
+        creatorId = groupId = leadTime = -1;
     }
 
     public Deadline(long creatorId, Long groupId, LocalDateTime creationDateTime, LocalDateTime dateTime,
-                    String title, String description) {
+                    Integer leadTime, Short priority, String title, String description) {
         this.creatorId = creatorId;
         this.groupId = groupId;
         this.creationDateTime = creationDateTime;
         this.dateTime = dateTime;
+        this.leadTime = leadTime == null ? 0 : leadTime;
+        this.priority = priority == null ? 0 : priority;
         this.title = title;
         this.description = description;
+    }
+
+    public void applyPatch(DeadlinePatch patch) {
+        if (patch.title != null)
+            title = patch.title;
+        if (patch.dateTime != null)
+            dateTime = patch.dateTime;
+        if (patch.description != null)
+            description = patch.description;
+        if (patch.leadTime != null)
+            leadTime = patch.leadTime;
+        if (patch.priority != null)
+            priority = patch.priority;
     }
 }
