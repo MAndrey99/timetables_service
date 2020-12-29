@@ -7,15 +7,17 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-public class EDFScheduler {
+public class SRTScheduler implements Scheduler {
     private List<Deadline> deadlines;
 
+    @Override
     public void setDeadlines(List<Deadline> deadlineList) {
         deadlines = deadlineList.stream()
-                .filter((deadline -> deadline.getLeadTime() != null))
+                .filter((deadline -> deadline.getLeadTime() > 0))
                 .collect(Collectors.toList());
     }
 
+    @Override
     public Optional<List<Deadline>> getSchedule() {
         return schedule() ? Optional.of(deadlines) : Optional.empty();
     }
