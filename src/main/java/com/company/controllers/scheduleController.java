@@ -6,6 +6,7 @@ import com.company.repositories.DeadlineRepository;
 import com.company.scheduling.Schedulers;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,6 +19,7 @@ import java.time.LocalDateTime;
 
 @RestController()
 @RequestMapping("schedule")
+@Slf4j
 public class scheduleController {
     @Autowired private ObjectMapper objectMapper;
     @Autowired private DeadlineRepository deadlineRepository;
@@ -28,6 +30,7 @@ public class scheduleController {
             @RequestParam(value = "algorithm", defaultValue = "prioritySRTF") String algorithm
     ) throws JsonProcessingException {
         try {
+            log.info("строим расписание для groupId=" + groupId + " алгоритмом " + algorithm);
             var schedule = Schedulers.schedule(deadlineRepository.findAll((r, cq, cb) -> {
                 cq.orderBy(cb.asc(r.get("dateTime")));
                 var res = cb.conjunction();
@@ -35,10 +38,15 @@ public class scheduleController {
                 res = cb.and(res, cb.greaterThan(r.get("dateTime"), LocalDateTime.now()));
                 return res;
             }), algorithm);
-            if (schedule.isEmpty())
+            if (schedule.isEmpty()) {
+                log.info("расписание не сформировано(groupId=" + groupId + ")");
                 throw new ResponseStatusException(HttpStatus.EXPECTATION_FAILED);
+            } else {
+                log.info("расписание успешно сформировано(groupId=" + groupId + ")");
+            }
             return objectMapper.writeValueAsString(new Deadline.DeadlinesBucket(schedule.get()));
         } catch (UnsupportedOperationException e) {
+            log.info("ошибка построения расписания(groupId=" + groupId + "):" + e.getLocalizedMessage());
             throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY);
         }
     }

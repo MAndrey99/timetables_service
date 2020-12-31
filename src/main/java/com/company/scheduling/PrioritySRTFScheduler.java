@@ -1,11 +1,13 @@
 package com.company.scheduling;
 
 import com.company.models.Deadline;
+import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.*;
 
+@Slf4j
 public class PrioritySRTFScheduler extends SRTFScheduler {
     /**
      * Строит расписание таким образом, чтобы было выполнено максимум дедлайнов с учетом приоритета
@@ -21,7 +23,10 @@ public class PrioritySRTFScheduler extends SRTFScheduler {
                 localDt = newDt.get();
         }
 
-        return super.schedule();
+        var res = super.schedule();
+        if (!res)
+            log.error(PrioritySRTFScheduler.class.getName() + " не смог построить расписание!");
+        return res;
     }
 
     /**
