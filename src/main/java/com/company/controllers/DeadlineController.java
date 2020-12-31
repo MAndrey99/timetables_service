@@ -21,11 +21,12 @@ public class DeadlineController {
     @Autowired private Notifier notifier;
 
     @PostMapping
-    void postDeadline(@RequestBody String deadline) {
+    String postDeadline(@RequestBody String deadline) {
         try {
             Deadline dl = objectMapper.createParser(deadline).readValueAs(Deadline.class);
-            deadlineRepository.save(dl);
+            dl = deadlineRepository.save(dl);
             notifier.updateNextNotificationTime();
+            return objectMapper.writeValueAsString(dl);
         } catch (IOException e) {
             throw new ResponseStatusException(HttpStatus.EXPECTATION_FAILED);
         }
