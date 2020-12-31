@@ -23,7 +23,7 @@ def main():
     if m:
         check_call(["heroku", "config:set", f"JDBC_DATABASE_USERNAME={m.group('username')}"] + app_info)
         check_call(["heroku", "config:set", f"JDBC_DATABASE_PASSWORD={m.group('password')}"] + app_info)
-        check_call(["heroku", "config:set", f"JDBC_DATABASE_URL={m.group('address')}"] + app_info)
+        check_call(["heroku", "config:set", f"JDBC_DATABASE_URL=jdbc:postgresql://{m.group('address')}"] + app_info)
     else:
         print("ошибка!")
 
