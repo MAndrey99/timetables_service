@@ -2,6 +2,7 @@ package com.company.models;
 
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
@@ -50,7 +51,7 @@ public class Deadline {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    protected long id;
+    @Getter protected long id;
     @Getter protected final long creatorId;
     @Getter protected final long groupId;
     @Getter @Setter protected LocalDateTime creationDateTime;  // время появления задачи
@@ -97,5 +98,10 @@ public class Deadline {
             leadTime = patch.leadTime;
         if (patch.priority != null)
             priority = patch.priority;
+    }
+
+    @JsonIgnore
+    public LocalDateTime getRemainingTime() {
+        return dateTime.minusSeconds(leadTime);
     }
 }

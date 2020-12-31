@@ -10,7 +10,8 @@ import java.util.TreeMap;
 public final class Schedulers {
     static Map<String, Scheduler> schedulers = new TreeMap<>();
     static {
-        schedulers.put("simple_srt" , new SRTScheduler());
+        schedulers.put("SRTF", new SRTFScheduler());
+        schedulers.put("prioritySRTF", new PrioritySRTFScheduler());
     }
 
     private Schedulers() {}

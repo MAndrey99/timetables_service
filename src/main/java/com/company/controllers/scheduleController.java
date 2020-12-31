@@ -25,7 +25,7 @@ public class scheduleController {
     @GetMapping
     String getSchedule(
             @RequestParam(value = "groupId") long groupId,
-            @RequestParam(value = "algorithm", defaultValue = "simple_srt") String algorithm
+            @RequestParam(value = "algorithm", defaultValue = "prioritySRTF") String algorithm
     ) throws JsonProcessingException {
         try {
             var schedule = Schedulers.schedule(deadlineRepository.findAll((r, cq, cb) -> {

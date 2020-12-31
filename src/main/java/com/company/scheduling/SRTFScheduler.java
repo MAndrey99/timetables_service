@@ -1,25 +1,17 @@
 package com.company.scheduling;
 
-import com.company.models.Deadline;
-
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
-public class SRTScheduler implements Scheduler {
-    private List<Deadline> deadlines;
-
+public class SRTFScheduler extends Scheduler {
     @Override
-    public void setDeadlines(List<Deadline> deadlineList) {
-        deadlines = deadlineList.stream()
-                .filter((deadline -> deadline.getLeadTime() > 0))
-                .collect(Collectors.toList());
-    }
+    protected void prepare() {
+        super.prepare();
 
-    @Override
-    public Optional<List<Deadline>> getSchedule() {
-        return schedule() ? Optional.of(deadlines) : Optional.empty();
+        var offset = OffsetDateTime.now().getOffset();
+        deadlines.sort((a, b) -> (int) (
+                a.getRemainingTime().toEpochSecond(offset) - b.getRemainingTime().toEpochSecond(offset))
+        );
     }
 
     /**
@@ -32,13 +24,9 @@ public class SRTScheduler implements Scheduler {
      *
      * @return true в случае успеха, false если уложиться во все дедлайны невозможно
      */
-    private boolean schedule() {
-        var now = OffsetDateTime.now();
-        var offset = now.getOffset();
-        var localDt = now.toLocalDateTime();
-
-        deadlines.sort((a, b) -> (int) (a.getDateTime().minusSeconds(a.getLeadTime()).toEpochSecond(offset)
-                - b.getDateTime().minusSeconds(b.getLeadTime()).toEpochSecond(offset)));
+    @Override
+    protected boolean schedule() {
+        var localDt = LocalDateTime.now();
 
         for (var it : deadlines) {
             localDt = localDt.plusSeconds(it.getLeadTime());
