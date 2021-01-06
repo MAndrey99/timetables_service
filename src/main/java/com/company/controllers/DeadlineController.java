@@ -21,18 +21,19 @@ public class DeadlineController {
     @Autowired private Notifier notifier;
 
     @PostMapping
-    void postDeadline(@RequestBody String deadline) {
+    String postDeadline(@RequestBody String deadline) {
         try {
             Deadline dl = objectMapper.createParser(deadline).readValueAs(Deadline.class);
-            deadlineRepository.save(dl);
+            dl = deadlineRepository.save(dl);
             notifier.updateNextNotificationTime();
+            return objectMapper.writeValueAsString(dl);
         } catch (IOException e) {
             throw new ResponseStatusException(HttpStatus.EXPECTATION_FAILED);
         }
     }
 
     @PatchMapping(path = "/{id}")
-    void patchDeadline(@PathVariable long id, @RequestBody String reuqest) {
+    String patchDeadline(@PathVariable long id, @RequestBody String reuqest) throws JsonProcessingException {
         Deadline.DeadlinePatch patch;
         try {
             patch = objectMapper.createParser(reuqest).readValueAs(Deadline.DeadlinePatch.class);
@@ -44,6 +45,7 @@ public class DeadlineController {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
         deadline.applyPatch(patch);
         deadlineRepository.save(deadline);
+        return objectMapper.writeValueAsString(deadline);
     }
 
     @GetMapping
@@ -69,14 +71,23 @@ public class DeadlineController {
         );
     }
 
+    @GetMapping("/{id}")
+    String getDeadline(@RequestParam(value = "groupId", required = false) Long groupId,
+                       @PathVariable(value = "id") long id) throws JsonProcessingException {
+        var d = deadlineRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        if (groupId != null && d.getGroupId() != groupId)
+            throw new ResponseStatusException(HttpStatus.EXPECTATION_FAILED);
+        return objectMapper.writeValueAsString(d);
+    }
+
     @DeleteMapping("/{id}")
     void deleteDeadline(@RequestParam(value = "groupId", required = false) Long groupId,
                         @PathVariable(value = "id") long id) {
-        var deadline = deadlineRepository.findById(id);
-        if (deadline.isEmpty())
-            throw new ResponseStatusException(HttpStatus.NO_CONTENT);
-        if (groupId != null && deadline.get().getGroupId() != groupId)
+        var deadline = deadlineRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NO_CONTENT));
+        if (groupId != null && deadline.getGroupId() != groupId)
             throw new ResponseStatusException(HttpStatus.EXPECTATION_FAILED);
-        deadlineRepository.delete(deadline.get());
+        deadlineRepository.delete(deadline);
     }
 }
