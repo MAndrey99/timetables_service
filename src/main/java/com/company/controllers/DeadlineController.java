@@ -7,10 +7,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.io.IOException;
+import java.beans.PropertyEditorSupport;
 import java.time.LocalDateTime;
 
 @RestController()
@@ -21,26 +22,15 @@ public class DeadlineController {
     @Autowired private Notifier notifier;
 
     @PostMapping
-    String postDeadline(@RequestBody String deadline) {
-        try {
-            Deadline dl = objectMapper.createParser(deadline).readValueAs(Deadline.class);
-            dl = deadlineRepository.save(dl);
-            notifier.updateNextNotificationTime();
-            return objectMapper.writeValueAsString(dl);
-        } catch (IOException e) {
-            throw new ResponseStatusException(HttpStatus.EXPECTATION_FAILED);
-        }
+    String postDeadline(@RequestBody Deadline deadline) throws JsonProcessingException {
+        deadline = deadlineRepository.save(deadline);
+        notifier.updateNextNotificationTime();
+        return objectMapper.writeValueAsString(deadline);
     }
 
     @PatchMapping(path = "/{id}")
-    String patchDeadline(@PathVariable long id, @RequestBody String reuqest) throws JsonProcessingException {
-        Deadline.DeadlinePatch patch;
-        try {
-            patch = objectMapper.createParser(reuqest).readValueAs(Deadline.DeadlinePatch.class);
-        } catch (IOException e) {
-            throw new ResponseStatusException(HttpStatus.EXPECTATION_FAILED);
-        }
-
+    String patchDeadline(@PathVariable long id, @RequestBody Deadline.DeadlinePatch patch)
+            throws JsonProcessingException {
         var deadline = deadlineRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
         deadline.applyPatch(patch);
@@ -89,5 +79,10 @@ public class DeadlineController {
         if (groupId != null && deadline.getGroupId() != groupId)
             throw new ResponseStatusException(HttpStatus.EXPECTATION_FAILED);
         deadlineRepository.delete(deadline);
+    }
+
+    @InitBinder
+    public void initBinder(WebDataBinder binder) {
+        binder.registerCustomEditor(Deadline.class, new PropertyEditorSupport(objectMapper));
     }
 }

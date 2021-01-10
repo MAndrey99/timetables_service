@@ -14,8 +14,10 @@ import java.util.List;
 
 @Entity
 @Table(name = "deadline")
-@JsonAutoDetect(creatorVisibility = JsonAutoDetect.Visibility.PROTECTED_AND_PUBLIC,
-        fieldVisibility = JsonAutoDetect.Visibility.PROTECTED_AND_PUBLIC)
+@JsonAutoDetect(
+        creatorVisibility = JsonAutoDetect.Visibility.PROTECTED_AND_PUBLIC,
+        fieldVisibility = JsonAutoDetect.Visibility.PROTECTED_AND_PUBLIC
+)
 public class Deadline {
     @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.PROTECTED_AND_PUBLIC)
     public static class DeadlinesBucket {
