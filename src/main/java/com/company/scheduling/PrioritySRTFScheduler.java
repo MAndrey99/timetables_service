@@ -16,6 +16,7 @@ public class PrioritySRTFScheduler extends SRTFScheduler {
     protected boolean schedule() {
         var localDt = LocalDateTime.now();
         var it = deadlines.listIterator();
+        var allDeadlines = new ArrayList<>(deadlines);
 
         while (it.hasNext()) {
             var newDt = executeOrRemove(it, localDt);
@@ -26,12 +27,18 @@ public class PrioritySRTFScheduler extends SRTFScheduler {
         var res = super.schedule();
         if (!res)
             log.error(PrioritySRTFScheduler.class.getName() + " не смог построить расписание!");
+        else {
+            for (var d : allDeadlines)
+                if (!schedule.getScheduledDeadlines().contains(d))
+                    schedule.getUnscheduledDeadlines().add(d);
+        }
         return res;
     }
 
     /**
      * Проверяет, что задание может быть выполнено. Если не может - удаляет.
-     * Возможно удаляет предыдущие дедлайны с более низким приоритетом.
+     * Удаляет предыдущие дедлайны с более низким приоритетом если это необходимо
+     * для успешного добавления дедлайна в расписание.
      *
      * @param it итератор на дедлайн, который надо поместить в расписание.
      * @param at время окончания предыдущей задачи.

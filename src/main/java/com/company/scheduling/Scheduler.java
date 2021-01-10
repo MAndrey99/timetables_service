@@ -1,6 +1,7 @@
 package com.company.scheduling;
 
 import com.company.models.Deadline;
+import com.company.models.Schedule;
 
 import java.util.List;
 import java.util.Optional;
@@ -8,6 +9,7 @@ import java.util.stream.Collectors;
 
 public abstract class Scheduler {
     protected List<Deadline> deadlines;
+    protected Schedule schedule;
     private boolean scheduled = true;
 
     public void setDeadlines(List<Deadline> deadlineList) {
@@ -15,7 +17,7 @@ public abstract class Scheduler {
         scheduled = false;
     }
 
-    public Optional<List<Deadline>> getSchedule() {
+    public Optional<Schedule> getSchedule() {
         if (!scheduled) {
             prepare();
             scheduled = schedule();
@@ -25,7 +27,7 @@ public abstract class Scheduler {
                 return Optional.empty();
             }
         }
-        return Optional.ofNullable(deadlines);
+        return Optional.ofNullable(schedule);
     }
 
     /**
@@ -40,7 +42,7 @@ public abstract class Scheduler {
 
     /**
      * строит расписание.
-     * при возвращении true ожидается, что deadlines содержит готовое расписание.
+     * при возвращении true ожидается, что schedule содержит готовое расписание.
      *
      * @return true если удалось построить расписание
      */

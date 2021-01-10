@@ -1,6 +1,7 @@
 package com.company.scheduling;
 
 import com.company.models.Deadline;
+import com.company.models.Schedule;
 
 import java.util.List;
 import java.util.Map;
@@ -16,7 +17,7 @@ public final class Schedulers {
 
     private Schedulers() {}
 
-    public static Optional<List<Deadline>> schedule(List<Deadline> deadlineList, String schedulerName) {
+    public static Optional<Schedule> schedule(List<Deadline> deadlineList, String schedulerName) {
         var scheduler = schedulers.get(schedulerName);
         if (scheduler == null)
             throw new UnsupportedOperationException("алгоритм планирования " + schedulerName + " не поддерживается");

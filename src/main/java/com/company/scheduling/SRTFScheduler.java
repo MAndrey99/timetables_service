@@ -1,5 +1,7 @@
 package com.company.scheduling;
 
+import com.company.models.Schedule;
+
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 
@@ -35,6 +37,7 @@ public class SRTFScheduler extends Scheduler {
             it.setDateTime(localDt);
         }
 
+        schedule = new Schedule(deadlines);
         return true;
     }
 }
