@@ -13,7 +13,7 @@ import java.util.List;
 )
 public class Schedule {
     @Getter @Setter protected List<Deadline> scheduledDeadlines;
-    @Getter @Setter protected List<Deadline> unscheduledDeadlines= new LinkedList<>();
+    @Getter @Setter protected List<Deadline> unscheduledDeadlines = new LinkedList<>();
 
     public Schedule() {
         scheduledDeadlines = new LinkedList<>();
