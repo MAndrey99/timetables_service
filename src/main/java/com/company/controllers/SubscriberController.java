@@ -3,6 +3,7 @@ package com.company.controllers;
 import com.company.models.Deadline;
 import com.company.models.Subscriber;
 import com.company.repositories.SubscriberRepository;
+import com.company.subscription.Notifier;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +26,7 @@ import java.util.ArrayList;
 public class SubscriberController {
     @Autowired private ObjectMapper objectMapper;
     @Autowired private SubscriberRepository subscriberRepository;
+    @Autowired private Notifier notifier;
 
     @PostMapping
     void subscribe(@RequestBody String subscriberUrl) throws JsonProcessingException, InterruptedException {
@@ -64,6 +66,8 @@ public class SubscriberController {
             log.info("добавить подписчика " + subscriberUrl + " не удалось");
             throw new ResponseStatusException(HttpStatus.EXPECTATION_FAILED);
         }
+
+        notifier.updateNextNotificationTime();
     }
 
     @DeleteMapping

@@ -23,11 +23,11 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
-import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-
-import static java.lang.Math.max;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.*;
 
 
 @Component
@@ -38,7 +38,9 @@ public class Notifier extends Thread {
     @Autowired protected SubscriberRepository subscriberRepository;
     @Autowired protected ObjectMapper objectMapper;
     @Value("${application.subscribers.maxAdvanceNoticeSeconds}") protected int maxAdvanceNoticeSeconds;
-    protected Timer timer = null;
+    private boolean needRecalculateDelay = false;
+    private boolean sending = false;
+    private final Object sendingLock = new Object();
 
     @PostConstruct
     void postConstruct() {
@@ -60,7 +62,7 @@ public class Notifier extends Thread {
             e.printStackTrace();
         }
 
-        final boolean successful = response != null && response.statusCode() == 200;
+        final boolean successful = (response != null && response.statusCode() == 200);
         if (successful) {
             sub.setLastSendDeadlineDatetime(bucket.getDeadlines().get(bucket.getDeadlines().size() - 1).getDateTime());
             subscriberRepository.save(sub);
@@ -68,7 +70,13 @@ public class Notifier extends Thread {
         return CompletableFuture.completedFuture(successful);
     }
 
-    protected synchronized void sendNotifications() {
+    @SneakyThrows
+    protected void sendNotifications() {
+        synchronized (sendingLock) {
+            if (needRecalculateDelay)
+                return;
+            sending = true;
+        }
         log.info("начата рассылка сообщений");
 
         final var now = LocalDateTime.now();
@@ -78,70 +86,96 @@ public class Notifier extends Thread {
             List<Deadline> toSending = new ArrayList<>(deadlineRepository.findAll((r, cq, cb) -> {
                 cq.orderBy(cb.asc(r.get("dateTime")));
                 return cb.and(
-                        cb.lessThan(r.get("dateTime"), now.plusSeconds(maxAdvanceNoticeSeconds / 2)),
+                        cb.lessThan(r.get("dateTime"), now.plusSeconds(maxAdvanceNoticeSeconds)),
                         cb.greaterThan(r.get("dateTime"), subscriber.getLastSendDeadlineDatetime())
                 );
             }));
 
-            if (!toSending.isEmpty()) {
-                try {
-                    tasks.add(sendNotification(subscriber, new Deadline.DeadlinesBucket(toSending)));
-                } catch (InterruptedException | JsonProcessingException e) {
-                    e.printStackTrace();
-                }
-            }
+            if (!toSending.isEmpty())
+                tasks.add(sendNotification(subscriber, new Deadline.DeadlinesBucket(toSending)));
         }
 
-        log.info("разосланы уведомления " + tasks.stream().filter((f) -> {
+        log.info("разосланы уведомления %d подписчикам".formatted(tasks.stream().filter(f -> {
             try {
                 return f.get();
-            } catch (InterruptedException | ExecutionException e) {
+            } catch (ExecutionException e) {
                 e.printStackTrace();
+            } catch (InterruptedException e) {
+                interrupt();
             }
             return false;
-        }).count() + " подписчикам");
-        notify();
+        }).count()));
+
+        sending = false;
+        synchronized (this) {
+            needRecalculateDelay = true;
+            notifyAll();
+        }
     }
 
-    protected long nextNotificationDelay() {
-        final var deadline = deadlineRepository.findFirstByDateTimeGreaterThanEqualOrderByDateTimeAsc(
-                LocalDateTime.now().minusSeconds(maxAdvanceNoticeSeconds / 2)
+    protected long getNextNotificationDelay() {
+        final var now = OffsetDateTime.now();
+        final var lastSentDeadlineDateTime = subscriberRepository.findMinLastSendDeadlineDatetime();
+        if (lastSentDeadlineDateTime.isEmpty())
+            return -1;  // нет подписчиков
+        final var deadline = deadlineRepository.findFirstByDateTimeGreaterThanOrderByDateTime(
+                lastSentDeadlineDateTime.get()
         );
-        var now = OffsetDateTime.now();
-        if (deadline.isPresent() && now.isBefore(deadline.get().getDateTime().atOffset(now.getOffset()))) {
-            return max(deadline.get().getDateTime().toEpochSecond(now.getOffset())
-                    - now.toEpochSecond()
-                    - maxAdvanceNoticeSeconds, 0);
-        }
-        return -1;
+        if (deadline.isEmpty())
+            return -1;  // нет предстоящих дедлайнов
+        var res = deadline.get().getDateTime().toEpochSecond(now.getOffset())
+                - now.toEpochSecond() - maxAdvanceNoticeSeconds;
+        if (res <= 0)
+            return 0;  // требуется отправить дедлайн, который мы почему-то не отправили ранее
+        return res;
     }
 
     public synchronized void updateNextNotificationTime() {
-        notify();
+        if (!needRecalculateDelay) {
+            needRecalculateDelay = true;
+            notifyAll();
+        }
+    }
+
+    private synchronized void waitRecalculation() throws InterruptedException {
+        needRecalculateDelay = false;
+        while (!needRecalculateDelay)
+            wait();
+    }
+
+    private void cancelSending(ScheduledFuture<?> future) throws ExecutionException, InterruptedException {
+        synchronized (sendingLock) {
+            if (sending) {
+                future.get();
+                sending = false;
+            } else {
+                future.cancel(true);
+            }
+        }
     }
 
     @Override
     @SneakyThrows
-    public synchronized void run() {
+    public void run() {
+        var scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
+        Optional<ScheduledFuture<?>> future = Optional.empty();
+
         while (true) {
-            var nextNotification = nextNotificationDelay();
-            if (nextNotification >= 0) {
-                timer = new Timer();
-                timer.schedule(new TimerTask() {
-                    @Override
-                    public void run() {
-                        sendNotifications();
-                    }
-                }, nextNotification * 1000);
-                log.info("следующая рассылка уведомлений подписчикам через " + nextNotification + " секунд");
-            } else {
-                timer = null;
-                log.info("ближайших дедлайнов не найдено, ожидание появления новых");
+            var nextNotificationDelay = getNextNotificationDelay();
+            synchronized (this) {
+                if (nextNotificationDelay >= 0) {
+                    log.info("следующая рассылка уведомлений подписчикам через " + nextNotificationDelay + " секунд");
+                    future = Optional.of(scheduledExecutor.schedule(
+                            this::sendNotifications, nextNotificationDelay, TimeUnit.SECONDS
+                    ));
+                } else {
+                    log.info("пока отправлять нечего");
+                }
+                waitRecalculation();
             }
-            sleep(1000);  // как минимум секунда между отправками обновлений(отправляем немного наперёд)
-            wait();
-            if (timer != null)
-                timer.cancel();
+
+            if (future.isPresent() && !future.get().isDone())
+                cancelSending(future.get());
         }
     }
 }

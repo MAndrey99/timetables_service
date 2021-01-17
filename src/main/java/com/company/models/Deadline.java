@@ -67,26 +67,21 @@ public class Deadline {
                     @JsonProperty(value = "groupId", required = true) long groupId,
                     @JsonProperty(value = "dateTime", required = true) LocalDateTime dateTime,
                     @JsonProperty(value = "leadTime") Integer leadTime,
-                    @JsonProperty(value = "priority") short priority,
+                    @JsonProperty(value = "priority") Short priority,
                     @JsonProperty(value = "title", required = true) String title,
                     @JsonProperty(value = "description") String description) {
-        this(creatorId, groupId, LocalDateTime.now(), dateTime, leadTime, priority, title, description);
-    }
-
-    protected Deadline() {
-        creatorId = groupId = leadTime = -1;
-    }
-
-    public Deadline(long creatorId, Long groupId, LocalDateTime creationDateTime, LocalDateTime dateTime,
-                    Integer leadTime, Short priority, String title, String description) {
         this.creatorId = creatorId;
         this.groupId = groupId;
-        this.creationDateTime = creationDateTime;
+        this.creationDateTime = LocalDateTime.now();
         this.dateTime = dateTime;
         this.leadTime = leadTime == null ? 0 : leadTime;
         this.priority = priority == null ? 0 : priority;
         this.title = title;
         this.description = description;
+    }
+
+    protected Deadline() {
+        creatorId = groupId = leadTime = -1;
     }
 
     public void applyPatch(DeadlinePatch patch) {
