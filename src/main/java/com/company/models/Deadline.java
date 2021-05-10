@@ -4,6 +4,8 @@ package com.company.models;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -18,6 +20,9 @@ import java.util.List;
         creatorVisibility = JsonAutoDetect.Visibility.PROTECTED_AND_PUBLIC,
         fieldVisibility = JsonAutoDetect.Visibility.PROTECTED_AND_PUBLIC
 )
+@Getter
+@AllArgsConstructor
+@Builder(toBuilder = true)
 public class Deadline {
     @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.PROTECTED_AND_PUBLIC)
     public static class DeadlinesBucket {
@@ -33,55 +38,62 @@ public class Deadline {
         protected String title;
         protected String description;
         protected LocalDateTime dateTime;
-        protected Integer leadTime;
+        protected Long leadTime;
         protected Short priority;
+        protected Boolean isTransferable;
 
         public DeadlinePatch(
                 @JsonProperty(value = "dateTime") LocalDateTime dateTime,
-                @JsonProperty(value = "leadTime") Integer leadTime,
+                @JsonProperty(value = "leadTime") Long leadTime,
                 @JsonProperty(value = "title") String title,
                 @JsonProperty(value = "description") String description,
-                @JsonProperty(value = "priority") Short priority
+                @JsonProperty(value = "priority") Short priority,
+                @JsonProperty(value = "priority") Boolean isTransferable
         ) {
             this.title = title;
             this.description = description;
             this.dateTime = dateTime;
             this.leadTime = leadTime;
             this.priority = priority;
+            this.isTransferable = isTransferable;
         }
     }
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Getter protected long id;
-    @Getter protected final long creatorId;
-    @Getter protected final long groupId;
-    @Getter @Setter protected LocalDateTime creationDateTime;  // время появления задачи
-    @Getter @Setter protected LocalDateTime dateTime;  // время, к которому задача должна быть выполнена
-    @Getter @Setter protected int leadTime;  // предположительное время выполнения задачи в секундах
-    @Getter @Setter protected String title;
-    @Getter @Setter protected String description;
-    @Getter @Setter protected short priority;  // приоритет задачи. 0 - стандартный. Ниже значение - выше приоритет
+    protected Long id;
+    protected final Long creatorId;
+    protected final Long groupId;
+    @Setter protected LocalDateTime creationDateTime;  // время появления задачи
+    @Setter protected LocalDateTime dateTime;  // время, к которому задача должна быть выполнена
+    @Setter protected Long leadTime;  // предположительное время выполнения задачи в секундах
+    @Setter protected String title;
+    @Setter protected String description;
+    @Setter protected Short priority = 0;  // приоритет задачи. 0 - стандартный. Ниже значение - выше приоритет
+    @Setter protected Boolean isTransferable;
 
-    public Deadline(@JsonProperty(value = "creatorId", required = true) long creatorId,
-                    @JsonProperty(value = "groupId", required = true) long groupId,
+    public Deadline(@JsonProperty(value = "creatorId", required = true) Long creatorId,
+                    @JsonProperty(value = "groupId", required = true) Long groupId,
                     @JsonProperty(value = "dateTime", required = true) LocalDateTime dateTime,
-                    @JsonProperty(value = "leadTime") Integer leadTime,
+                    @JsonProperty(value = "leadTime") Long leadTime,
                     @JsonProperty(value = "priority") Short priority,
                     @JsonProperty(value = "title", required = true) String title,
-                    @JsonProperty(value = "description") String description) {
+                    @JsonProperty(value = "description") String description,
+                    @JsonProperty(value = "isTransferable") Boolean isTransferable) {
         this.creatorId = creatorId;
         this.groupId = groupId;
         this.creationDateTime = LocalDateTime.now();
         this.dateTime = dateTime;
         this.leadTime = leadTime == null ? 0 : leadTime;
         this.priority = priority == null ? 0 : priority;
+        this.isTransferable = isTransferable == null || isTransferable;
         this.title = title;
         this.description = description;
     }
 
     protected Deadline() {
-        creatorId = groupId = leadTime = -1;
+        creatorId = groupId = leadTime = -1L;
+        isTransferable = true;
     }
 
     public void applyPatch(DeadlinePatch patch) {
@@ -95,8 +107,13 @@ public class Deadline {
             leadTime = patch.leadTime;
         if (patch.priority != null)
             priority = patch.priority;
+        if (patch.isTransferable != null)
+            isTransferable = patch.isTransferable;
     }
 
+    /**
+     * Самое позднее время, в которое можно приступить к выполнению чтобы успеть.
+     */
     @JsonIgnore
     public LocalDateTime getRemainingTime() {
         return dateTime.minusSeconds(leadTime);

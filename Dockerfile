@@ -1,7 +1,7 @@
-FROM openjdk:15 as builder
+FROM openjdk:16 as builder
 COPY ./ /
 RUN /gradlew build
 
-FROM openjdk:15
+FROM openjdk:16
 COPY --from=builder /build/libs/*.jar app.jar
 ENTRYPOINT ["java", "-jar", "app.jar"]

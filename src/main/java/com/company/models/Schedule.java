@@ -1,8 +1,7 @@
 package com.company.models;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -11,15 +10,13 @@ import java.util.List;
         creatorVisibility = JsonAutoDetect.Visibility.PROTECTED_AND_PUBLIC,
         fieldVisibility = JsonAutoDetect.Visibility.PROTECTED_AND_PUBLIC
 )
+@AllArgsConstructor
+@RequiredArgsConstructor
 public class Schedule {
-    @Getter @Setter protected List<Deadline> scheduledDeadlines;
+    @NonNull @Getter @Setter protected List<Deadline> scheduledDeadlines;
     @Getter @Setter protected List<Deadline> unscheduledDeadlines = new LinkedList<>();
 
     public Schedule() {
         scheduledDeadlines = new LinkedList<>();
-    }
-
-    public Schedule(List<Deadline> scheduledDeadlines) {
-        this.scheduledDeadlines = scheduledDeadlines;
     }
 }
