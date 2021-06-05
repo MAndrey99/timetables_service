@@ -34,9 +34,9 @@ import java.util.concurrent.*;
 @EnableAsync(proxyTargetClass = true)
 @Slf4j
 public class Notifier extends Thread {
-    @Autowired protected DeadlineRepository deadlineRepository;
-    @Autowired protected SubscriberRepository subscriberRepository;
-    @Autowired protected ObjectMapper objectMapper;
+    @Autowired private DeadlineRepository deadlineRepository;
+    @Autowired private SubscriberRepository subscriberRepository;
+    @Autowired private ObjectMapper objectMapper;
     @Value("${application.subscribers.maxAdvanceNoticeSeconds}") protected int maxAdvanceNoticeSeconds;
     private boolean needRecalculateDelay = false;
     private boolean sending = false;

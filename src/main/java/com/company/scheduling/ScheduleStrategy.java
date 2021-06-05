@@ -9,7 +9,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
-public interface ScheduleStrategy {
+interface ScheduleStrategy {
     /**
      * Перед построением расписаний выполняется предварительная обработка дедлайнов.
      * Одним из этапов предварительной обработки является сортировка.

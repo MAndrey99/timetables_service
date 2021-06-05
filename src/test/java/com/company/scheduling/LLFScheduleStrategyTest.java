@@ -8,8 +8,8 @@ import java.time.LocalDateTime;
 import java.util.LinkedList;
 
 
-class SRTFScheduleStrategyTest {
-    private final SRTFScheduleStrategy srtfScheduleStrategy = new SRTFScheduleStrategy();
+class LLFScheduleStrategyTest {
+    private final LLFcheduleStrategy srtfScheduleStrategy = new LLFcheduleStrategy();
 
     @Test
     void schedule() {

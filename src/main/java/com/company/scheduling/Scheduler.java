@@ -8,7 +8,7 @@ import org.springframework.data.util.Pair;
 import java.time.LocalDateTime;
 import java.util.*;
 
-public class Scheduler {
+class Scheduler {
     protected List<Deadline> deadlines;
     protected Schedule schedule;
     private final ScheduleStrategy scheduleStrategy;

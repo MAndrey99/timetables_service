@@ -69,7 +69,7 @@ public class Deadline {
     @Setter protected Long leadTime;  // предположительное время выполнения задачи в секундах
     @Setter protected String title;
     @Setter protected String description;
-    @Setter protected Short priority = 0;  // приоритет задачи. 0 - стандартный. Ниже значение - выше приоритет
+    @Setter protected Short priority;  // приоритет задачи. 0 - стандартный. Ниже значение - выше приоритет
     @Setter protected Boolean isTransferable;
 
     public Deadline(@JsonProperty(value = "creatorId", required = true) Long creatorId,
@@ -93,6 +93,7 @@ public class Deadline {
 
     protected Deadline() {
         creatorId = groupId = leadTime = -1L;
+        priority = 0;
         isTransferable = true;
     }
 

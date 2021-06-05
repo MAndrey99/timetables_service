@@ -18,7 +18,7 @@ import java.time.LocalDateTime;
 @RestController()
 @RequestMapping("schedule")
 @Slf4j
-public class scheduleController {
+public class ScheduleController {
     @Autowired private DeadlineRepository deadlineRepository;
 
     @GetMapping

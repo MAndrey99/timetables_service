@@ -10,9 +10,10 @@ import java.util.Optional;
 public final class Schedulers {
     private Schedulers() {}
 
-    public static Optional<Schedule> schedule(@NonNull List<Deadline> deadlineList, @NonNull String schedulerName) {
+    public static Optional<Schedule> schedule(@NonNull List<Deadline> deadlineList, @NonNull String schedulerName)
+            throws UnsupportedOperationException {
         var strategy = switch (schedulerName) {
-            case "SRTF" -> new SRTFScheduleStrategy();
+            case "SRTF" -> new LLFcheduleStrategy();
             default -> throw new UnsupportedOperationException(
                     "алгоритм планирования %s не поддерживается".formatted(schedulerName)
             );
