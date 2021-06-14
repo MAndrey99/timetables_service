@@ -10,5 +10,6 @@ import java.util.Optional;
 
 @Repository
 public interface DeadlineRepository extends CrudRepository<Deadline, Long>, JpaSpecificationExecutor<Deadline> {
+
     Optional<Deadline> findFirstByDateTimeGreaterThanOrderByDateTime(LocalDateTime dt);
 }

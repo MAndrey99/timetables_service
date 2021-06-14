@@ -11,6 +11,7 @@ import java.util.Optional;
 
 @Repository
 public interface SubscriberRepository extends CrudRepository<Subscriber, Long>, JpaSpecificationExecutor<Subscriber> {
+
     Optional<Subscriber> findFirstByWebhookURL(String webhookURL);
 
     @Query("select min(lastSendDeadlineDatetime) from Subscriber")

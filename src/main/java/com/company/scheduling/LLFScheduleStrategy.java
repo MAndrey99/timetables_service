@@ -7,7 +7,8 @@ import lombok.NonNull;
 import java.time.LocalDateTime;
 import java.util.*;
 
-class LLFcheduleStrategy implements ScheduleStrategy {
+class LLFScheduleStrategy implements ScheduleStrategy {
+
     @Override
     public Comparator<Deadline> getComparator() {
         return Comparator.comparing(Deadline::getRemainingTime);

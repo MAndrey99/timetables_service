@@ -9,7 +9,7 @@ import java.util.LinkedList;
 
 
 class LLFScheduleStrategyTest {
-    private final LLFcheduleStrategy srtfScheduleStrategy = new LLFcheduleStrategy();
+    private final LLFScheduleStrategy srtfScheduleStrategy = new LLFScheduleStrategy();
 
     @Test
     void schedule() {

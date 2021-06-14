@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "subscriber")
 public class Subscriber {
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;

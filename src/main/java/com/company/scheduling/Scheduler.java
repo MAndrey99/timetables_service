@@ -8,7 +8,8 @@ import org.springframework.data.util.Pair;
 import java.time.LocalDateTime;
 import java.util.*;
 
-class Scheduler {
+public class Scheduler {
+
     protected List<Deadline> deadlines;
     protected Schedule schedule;
     private final ScheduleStrategy scheduleStrategy;
@@ -21,6 +22,12 @@ class Scheduler {
     Scheduler(@NonNull ScheduleStrategy scheduleStrategy, @NonNull List<Deadline> deadlineList) {
         this(scheduleStrategy);
         setDeadlines(deadlineList);
+    }
+
+    public static Optional<Schedule> schedule(@NonNull List<Deadline> deadlineList, @NonNull String algorithmName)
+            throws IllegalArgumentException {
+        var scheduler = new Scheduler(ScheduleAlgorithms.valueOf(algorithmName).getStrategy(), deadlineList);
+        return scheduler.getSchedule();
     }
 
     public void setDeadlines(@NonNull List<Deadline> deadlineList) {

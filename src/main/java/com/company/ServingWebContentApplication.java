@@ -26,6 +26,7 @@ import java.util.TimeZone;
 @SpringBootApplication
 @EnableJpaRepositories("com.company.repositories")
 public class ServingWebContentApplication {
+
     @Value("${application.datetime.zone}")
     String timezone;
 

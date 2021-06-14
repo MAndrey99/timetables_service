@@ -1,6 +1,5 @@
 package com.company.subscription;
 
-
 import com.company.models.Deadline;
 import com.company.models.Subscriber;
 import com.company.repositories.DeadlineRepository;
@@ -29,26 +28,44 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.*;
 
-
 @Component
 @EnableAsync(proxyTargetClass = true)
 @Slf4j
 public class Notifier extends Thread {
-    @Autowired private DeadlineRepository deadlineRepository;
-    @Autowired private SubscriberRepository subscriberRepository;
-    @Autowired private ObjectMapper objectMapper;
-    @Value("${application.subscribers.maxAdvanceNoticeSeconds}") protected int maxAdvanceNoticeSeconds;
+
+    @Value("${application.subscribers.maxAdvanceNoticeSeconds}")
+    private int maxAdvanceNoticeSeconds;
+
+    private final DeadlineRepository deadlineRepository;
+    private final SubscriberRepository subscriberRepository;
+    private final ObjectMapper objectMapper;
+
     private boolean needRecalculateDelay = false;
     private boolean sending = false;
     private final Object sendingLock = new Object();
 
+    @Autowired
+    Notifier(DeadlineRepository deadlineRepository, SubscriberRepository subscriberRepository,
+                     ObjectMapper objectMapper) {
+        this.deadlineRepository = deadlineRepository;
+        this.subscriberRepository = subscriberRepository;
+        this.objectMapper = objectMapper;
+    }
+
+    public synchronized void updateNextNotificationTime() {
+        if (!needRecalculateDelay) {
+            needRecalculateDelay = true;
+            notifyAll();
+        }
+    }
+
     @PostConstruct
-    void postConstruct() {
+    private void postConstruct() {
         this.start();
     }
 
     @Async
-    protected CompletableFuture<Boolean> sendNotification(Subscriber sub, Deadline.DeadlinesBucket bucket)
+    CompletableFuture<Boolean> sendNotification(Subscriber sub, Deadline.DeadlinesBucket bucket)
             throws InterruptedException, JsonProcessingException {
         final var client = HttpClient.newHttpClient();
         final var request = HttpRequest.newBuilder()
@@ -71,7 +88,7 @@ public class Notifier extends Thread {
     }
 
     @SneakyThrows
-    protected void sendNotifications() {
+    private void sendNotifications() {
         synchronized (sendingLock) {
             if (needRecalculateDelay)
                 return;
@@ -113,7 +130,7 @@ public class Notifier extends Thread {
         }
     }
 
-    protected long getNextNotificationDelay() {
+    private long getNextNotificationDelay() {
         final var now = OffsetDateTime.now();
         final var lastSentDeadlineDateTime = subscriberRepository.findMinLastSendDeadlineDatetime();
         if (lastSentDeadlineDateTime.isEmpty())
@@ -128,13 +145,6 @@ public class Notifier extends Thread {
         if (res <= 0)
             return 0;  // требуется отправить дедлайн, который мы почему-то не отправили ранее
         return res;
-    }
-
-    public synchronized void updateNextNotificationTime() {
-        if (!needRecalculateDelay) {
-            needRecalculateDelay = true;
-            notifyAll();
-        }
     }
 
     private synchronized void waitRecalculation() throws InterruptedException {

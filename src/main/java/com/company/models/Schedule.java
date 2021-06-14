@@ -13,8 +13,12 @@ import java.util.List;
 @AllArgsConstructor
 @RequiredArgsConstructor
 public class Schedule {
-    @NonNull @Getter @Setter protected List<Deadline> scheduledDeadlines;
-    @Getter @Setter protected List<Deadline> unscheduledDeadlines = new LinkedList<>();
+
+    @NonNull @Getter @Setter
+    protected List<Deadline> scheduledDeadlines;
+
+    @Getter @Setter
+    protected List<Deadline> unscheduledDeadlines = new LinkedList<>();
 
     public Schedule() {
         scheduledDeadlines = new LinkedList<>();
