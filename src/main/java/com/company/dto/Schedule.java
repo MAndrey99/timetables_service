@@ -1,5 +1,6 @@
-package com.company.models;
+package com.company.dto;
 
+import com.company.models.Deadline;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import lombok.*;
 

@@ -1,5 +1,6 @@
 package com.company.services;
 
+import com.company.dto.DeadlineFilter;
 import com.company.models.Deadline;
 import com.company.repositories.DeadlineRepository;
 import com.company.subscription.Notifier;
@@ -8,16 +9,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.time.LocalDateTime;
-
 @Service
 public class DeadlineService {
+    // TODO: транзакции или lock-free
 
     private final DeadlineRepository deadlineRepository;
     private final Notifier notifier;
 
     @Autowired
-    private DeadlineService(DeadlineRepository deadlineRepository, Notifier notifier) {
+    public DeadlineService(DeadlineRepository deadlineRepository, Notifier notifier) {
         this.deadlineRepository = deadlineRepository;
         this.notifier = notifier;
     }
@@ -33,25 +33,13 @@ public class DeadlineService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
         deadline.applyPatch(patch);
         deadlineRepository.save(deadline);
+        notifier.updateNextNotificationTime();
         return deadline;
     }
 
     public Deadline.DeadlinesBucket getDeadline(Long groupId, Long creatorId, boolean relevant) {
         return new Deadline.DeadlinesBucket(
-                deadlineRepository.findAll((r, cq, cb) -> {
-                    cq.orderBy(cb.asc(r.get("dateTime")));
-                    var res = cb.conjunction();
-                    if (groupId != null) {
-                        res = cb.and(res, cb.equal(r.get("groupId"), groupId));
-                    }
-                    if (creatorId != null) {
-                        res = cb.and(res, cb.equal(r.get("creatorId"), creatorId));
-                    }
-                    if (relevant)
-                        res = cb.and(res, cb.greaterThan(r.get("dateTime"), LocalDateTime.now()));
-                    return res;
-                })
-        );
+                deadlineRepository.findAllByFilter(new DeadlineFilter(groupId, creatorId, relevant)));
     }
 
     public Deadline getDeadline(Long groupId, long id) {

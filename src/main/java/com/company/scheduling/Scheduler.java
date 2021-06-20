@@ -1,7 +1,7 @@
 package com.company.scheduling;
 
 import com.company.models.Deadline;
-import com.company.models.Schedule;
+import com.company.dto.Schedule;
 import lombok.NonNull;
 import org.springframework.data.util.Pair;
 
@@ -24,9 +24,10 @@ public class Scheduler {
         setDeadlines(deadlineList);
     }
 
-    public static Optional<Schedule> schedule(@NonNull List<Deadline> deadlineList, @NonNull String algorithmName)
+    public static Optional<Schedule> schedule(@NonNull List<Deadline> deadlineList,
+                                              @NonNull ScheduleAlgorithms algorithm)
             throws IllegalArgumentException {
-        var scheduler = new Scheduler(ScheduleAlgorithms.valueOf(algorithmName).getStrategy(), deadlineList);
+        var scheduler = new Scheduler(algorithm.getStrategy(), deadlineList);
         return scheduler.getSchedule();
     }
 

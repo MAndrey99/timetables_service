@@ -1,7 +1,8 @@
 package com.company.services;
 
-import com.company.models.Schedule;
+import com.company.dto.Schedule;
 import com.company.repositories.DeadlineRepository;
+import com.company.scheduling.ScheduleAlgorithms;
 import com.company.scheduling.Scheduler;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +24,10 @@ public class ScheduleService {
     }
 
     public Schedule getSchedule(long groupId, String algorithm) {
+        var scheduleAlgorithm = algorithm == null
+                ? ScheduleAlgorithms.PriorityLLF
+                : ScheduleAlgorithms.valueOf(algorithm);
+
         try {
             log.info("строим расписание для groupId=" + groupId + " алгоритмом " + algorithm);
             var schedule = Scheduler.schedule(deadlineRepository.findAll((r, cq, cb) -> {
@@ -31,7 +36,7 @@ public class ScheduleService {
                 res = cb.and(res, cb.equal(r.get("groupId"), groupId));
                 res = cb.and(res, cb.greaterThan(r.get("dateTime"), LocalDateTime.now()));
                 return res;
-            }), algorithm);
+            }), scheduleAlgorithm);
             if (schedule.isEmpty()) {
                 log.info("расписание не сформировано(groupId=" + groupId + ")");
                 throw new ResponseStatusException(HttpStatus.EXPECTATION_FAILED);

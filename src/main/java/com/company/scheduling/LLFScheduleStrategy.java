@@ -1,7 +1,7 @@
 package com.company.scheduling;
 
 import com.company.models.Deadline;
-import com.company.models.Schedule;
+import com.company.dto.Schedule;
 import lombok.NonNull;
 
 import java.time.LocalDateTime;

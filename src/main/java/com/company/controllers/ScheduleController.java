@@ -1,7 +1,6 @@
 package com.company.controllers;
 
-import com.company.models.Schedule;
-import com.company.scheduling.ScheduleAlgorithms;
+import com.company.dto.Schedule;
 import com.company.services.ScheduleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,8 +20,6 @@ class ScheduleController {
             @RequestParam(value = "groupId") long groupId,
             @RequestParam(value = "algorithm", required = false) String algorithm
     ) {
-        if (algorithm == null)
-            algorithm = ScheduleAlgorithms.PriorityLLF.name();  // значение по-умолчанию
         return scheduleService.getSchedule(groupId, algorithm);
     }
 }

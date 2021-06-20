@@ -13,17 +13,20 @@ repositories {
 }
 
 dependencies {
-    def springBootVersion = '2.4.5'
+    def springBootVersion = '2.5.1'
     def lombokVersion = '1.18.20'
     def jacksonVersion = '2.12.3'
     def postgresqlVersion = '42.2.20'
-    def junitVersion = '5.7.1'
+    def junitVersion = '5.7.2'
+    def mockitoVersion = '3.11.1'
+    def h2Version = '1.4.200'
 
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation group: 'org.springframework.boot', name: 'spring-boot-gradle-plugin', version: springBootVersion
     testImplementation group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: springBootVersion
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-data-jpa', version: springBootVersion
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-thymeleaf', version: springBootVersion
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-actuator', version: springBootVersion
 
     compileOnly group: 'org.projectlombok', name: 'lombok', version: lombokVersion
     annotationProcessor group: 'org.projectlombok', name: 'lombok', version: lombokVersion
@@ -36,7 +39,8 @@ dependencies {
 
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: junitVersion
     testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: junitVersion
-
+    testImplementation group: 'org.mockito', name: 'mockito-core', version: mockitoVersion
+    testImplementation group: 'com.h2database', name: 'h2', version: h2Version
     testImplementation('org.springframework.boot:spring-boot-starter-test') {
         exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
     }

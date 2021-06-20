@@ -33,8 +33,7 @@ import java.util.concurrent.*;
 @Slf4j
 public class Notifier extends Thread {
 
-    @Value("${application.subscribers.maxAdvanceNoticeSeconds}")
-    private int maxAdvanceNoticeSeconds;
+    private final int maxAdvanceNoticeSeconds;
 
     private final DeadlineRepository deadlineRepository;
     private final SubscriberRepository subscriberRepository;
@@ -46,10 +45,12 @@ public class Notifier extends Thread {
 
     @Autowired
     Notifier(DeadlineRepository deadlineRepository, SubscriberRepository subscriberRepository,
-                     ObjectMapper objectMapper) {
+             ObjectMapper objectMapper,
+             @Value("${application.subscribers.maxAdvanceNoticeSeconds}") int maxAdvanceNoticeSeconds) {
         this.deadlineRepository = deadlineRepository;
         this.subscriberRepository = subscriberRepository;
         this.objectMapper = objectMapper;
+        this.maxAdvanceNoticeSeconds = maxAdvanceNoticeSeconds;
     }
 
     public synchronized void updateNextNotificationTime() {
