@@ -47,7 +47,7 @@ public class Deadline {
                 @JsonProperty(value = "title") String title,
                 @JsonProperty(value = "description") String description,
                 @JsonProperty(value = "priority") Short priority,
-                @JsonProperty(value = "priority") Boolean isTransferable
+                @JsonProperty(value = "isTransferable") Boolean isTransferable
         ) {
             this.title = title;
             this.description = description;
