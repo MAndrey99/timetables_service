@@ -1,5 +1,6 @@
 server:
   port: ${PORT}
+
 spring:
   jpa:
     hibernate:
@@ -9,9 +10,16 @@ spring:
     url: ${JDBC_DATABASE_URL}
     username: ${JDBC_DATABASE_USERNAME}
     password: ${JDBC_DATABASE_PASSWORD}
+
 application:
   datetime:
     format: "dd-MM-yyyy HH:mm:ss"
     zone: "Europe/Moscow"
   subscribers:
     maxAdvanceNoticeSeconds: 10
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: prometheus,health,info,metrics

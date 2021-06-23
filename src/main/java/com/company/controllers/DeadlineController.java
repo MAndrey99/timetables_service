@@ -2,11 +2,13 @@ package com.company.controllers;
 
 import com.company.models.Deadline;
 import com.company.services.DeadlineService;
+import io.micrometer.core.annotation.Timed;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 @RestController()
 @RequestMapping("deadlines")
+@Timed
 class DeadlineController {
 
     @Autowired

@@ -14,6 +14,7 @@ repositories {
 
 dependencies {
     def springBootVersion = '2.5.1'
+    def micrometerVersion = '1.7.0'
     def lombokVersion = '1.18.20'
     def jacksonVersion = '2.12.3'
     def postgresqlVersion = '42.2.20'
@@ -26,7 +27,10 @@ dependencies {
     testImplementation group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: springBootVersion
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-data-jpa', version: springBootVersion
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-thymeleaf', version: springBootVersion
+
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-actuator', version: springBootVersion
+    implementation group: 'io.micrometer', name: 'micrometer-registry-prometheus', version: micrometerVersion
+    implementation group: 'io.micrometer', name: 'micrometer-registry-jmx', version: micrometerVersion
 
     compileOnly group: 'org.projectlombok', name: 'lombok', version: lombokVersion
     annotationProcessor group: 'org.projectlombok', name: 'lombok', version: lombokVersion

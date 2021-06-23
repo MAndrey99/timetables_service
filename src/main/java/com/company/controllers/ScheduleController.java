@@ -2,6 +2,7 @@ package com.company.controllers;
 
 import com.company.dto.Schedule;
 import com.company.services.ScheduleService;
+import io.micrometer.core.annotation.Timed;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController()
 @RequestMapping("schedule")
+@Timed
 class ScheduleController {
 
     @Autowired
